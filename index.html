@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الحضور - معهد الجزيرة العالي للهندسة والتكنولوجيا</title>
+    <!-- مكتبة قراءة الـ QR -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2b6cb0;
+            --accent-color: #3182ce;
+            --bg-color: #f7fafc;
+            --text-color: #2d3748;
+            --success-color: #38a169;
+            --error-color: #e53e3e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .btn-secondary {
+            background-color: #718096;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4a5568;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .status-msg {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .error {
+            background-color: #fed7d7;
+            color: #742a2a;
+        }
+
+        .admin-panel {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #ebf8ff;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>معهد الجزيرة العالي للهندسة والتكنولوجيا</h1>
+            <p class="subtitle">نظام تسجيل الحضور الذكي - قسم الهندسة المدنية</p>
+        </header>
+
+        <!-- واجهة اختيار نوع الدخول -->
+        <div id="home-section" class="section active">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button onclick="showSection('student-section')">تسجيل حضور طالب</button>
+                <button onclick="showSection('admin-login-section')" class="btn-secondary">لوحة تحكم المسؤولين (أدمن)</button>
+            </div>
+        </div>
+
+        <!-- واجهة تسجيل الطالب -->
+        <div id="student-section" class="section">
+            <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--secondary-color);">مسح كود المحاضرة (QR)</h2>
+            <div id="reader"></div>
+            <div id="student-result"></div>
+            <button onclick="showSection('home-section')" class="btn-secondary">العودة للرئيسية</button>
+        </div>
+
+        <!-- واجهة تسجيل دخول الأدمن -->
+        <div id="admin-login-section" class="section">
+            <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--secondary-color);">تسجيل دخول المسؤول</h2>
+            <div class="form-group">
+                <label for="admin-pass">كلمة المرور الإدارية:</label>
+                <input type="password" id="admin-pass" placeholder="أدخل باسورد الأدمن...">
+            </div>
+            <button onclick="verifyAdmin()">دخول لوحة التحكم</button>
+            <button onclick="showSection('home-section')" class="btn-secondary">العودة</button>
+            <div id="login-error" style="color: var(--error-color); margin-top: 10px; text-align: center;"></div>
+        </div>
+
+        <!-- لوحة التحكم -->
+        <div id="admin-dashboard" class="section">
+            <h2 style="margin-bottom: 15px; font-size: 1.2rem; color: var(--primary-color);">سجلات الحضور المسجلة</h2>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table id="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>مسلسل</th>
+                            <th>كود الطالب / البصمة</th>
+                            <th>الوقت والتاريخ</th>
+                            <th>الموقع (GPS)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- سجلات وهمية أو حقيقية -->
+                        <tr>
+                            <td>1</td>
+                            <td>طالب تجريبي (2026)</td>
+                            <td>4/10/2026 - 04:15 ص</td>
+                            <td>منيا القمح / المعهد</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button onclick="showSection('home-section')" class="btn-secondary" style="margin-top: 20px;">تسجيل خروج</button>
+        </div>
+    </div>
+
+    <script>
+        // مصفوفة الـ 10 باسوردات الإدارية الثابتة الخاصة بالدكاترة والمسؤولين
+        const adminPasswords = [
+            "admin123", "egi2026", "goda2026", "civil99", "manga55",
+            "eng101", "sec2026", "alpha77", "beta88", "delta99"
+        ];
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            // لو فتحنا صفحة الطالب، نشغل الكاميرا فوراً
+            if (sectionId === 'student-section') {
+                startScanner();
+            } else {
+                stopScanner();
+            }
+        }
+
+        let html5QrCode = null;
+
+        function startScanner() {
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                qrCodeMessage => {
+                    handleSuccessfulScan(qrCodeMessage);
+                },
+                errorMessage => {
+                    // أخطاء المسح البسيطة تتجاهل تلقائياً
+                }
+            ).catch(err => {
+                document.getElementById('student-result').innerHTML = `<div class="status-msg error">عذراً، يرجى السماح للمتصفح بالوصول إلى الكاميرا.</div>`;
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().catch(err => console.log(err));
+            }
+        }
+
+        function handleSuccessfulScan(codeContent) {
+            stopScanner();
+            
+            // التحقق من مكان الـ GPS كطبقة أمان إضافية
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    document.getElementById('student-result').innerHTML = `
+                        <div class="status-msg success">
+                            تم تسجيل الحضور بنجاح!<br>
+                            المحتوى: ${codeContent}<br>
+                            إحداثيات الموقع: ${lat.toFixed(4)}, ${lon.toFixed(4)}
+                        </div>
+                    `;
+                }, error => {
+                    document.getElementById('student-result').innerHTML = `
+                        <div class="status-msg error">يجب تفعيل موقع الـ GPS لتأكيد الحضور بدقة!</div>
+                    `;
+                });
+            } else {
+                document.getElementById('student-result').innerHTML = `<div class="status-msg success">تم تسجيل الحضور بنجاح بدون إحداثيات (المتصفح لا يدعم GPS).</div>`;
+            }
+        }
+
+        function verifyAdmin() {
+            const enteredPass = document.getElementById('admin-pass').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            if (adminPasswords.includes(enteredPass)) {
+                errorDiv.innerHTML = "";
+                document.getElementById('admin-pass').value = "";
+                showSection('admin-dashboard');
+            } else {
+                errorDiv.innerHTML = "كلمة المرور غير صحيحة، حاول مرة أخرى.";
+            }
+        }
+    </script>
+</body>
+                          </html>
+                          
